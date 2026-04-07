@@ -39,12 +39,43 @@
 - [ ] **CFG-01**: `OPENAI_API_KEY` is loaded from environment variable via `pydantic-settings`; app fails fast at startup with a clear error if missing
 - [ ] **CFG-02**: Database file path is configurable via environment variable with a sensible default (`./data/companies.db`)
 
-## v2 Requirements
+## v1.1 Requirements
+
+### AI Caching
+
+- [ ] **CACHE-01**: Pipeline skips OpenAI call when `description_hash` matches an existing record that already has `industry` populated
+- [ ] **CACHE-02**: `Company` model stores a `description_hash` TEXT field (SHA-256 of `.strip()`-ed description)
+- [ ] **CACHE-03**: `scripts/migrate_add_hash.py` applies `ALTER TABLE company ADD COLUMN description_hash TEXT` idempotently (no error if column already exists)
+
+### Filtering & Search
+
+- [ ] **FILTER-01**: `GET /companies?industry=fintech` returns only companies matching that industry (case-insensitive)
+- [ ] **FILTER-02**: `GET /companies?q=payments` searches both `company_name` and `description` (case-insensitive LIKE)
+- [ ] **FILTER-03**: Missing or empty query params return all companies unchanged
+- [ ] **FILTER-04**: Query param values containing `%` or `_` wildcard characters are escaped before use in LIKE clauses
+
+### MCP Server
+
+- [ ] **MCP-01**: `python mcp_server/server.py` starts a FastMCP stdio server with three tools: `search_companies`, `get_company`, `list_industries`
+- [ ] **MCP-02**: MCP server enables WAL journal mode (`PRAGMA journal_mode=WAL`) on the SQLite engine to allow concurrent reads alongside the FastAPI server
+- [ ] **MCP-03**: All logging in the MCP server and its imports is routed to `sys.stderr` — no `print()` to stdout
+
+### Frontend
+
+- [ ] **UI-01**: `GET /ui` serves a static HTML page showing company cards (name, industry, business model, summary, website link)
+- [ ] **UI-02**: Page includes a client-side industry filter that narrows visible cards without a page reload
+- [ ] **UI-03**: Page fetches data from `GET /companies` (using `?industry=` param when filtering)
+
+### CI/CD
+
+- [ ] **CICD-01**: `.github/workflows/code-review.yml` triggers `scripts/ai_code_review.py` on pull requests (opened + synchronize events)
+- [ ] **CICD-02**: Review script fetches the PR diff via GitHub API, sends it to OpenAI, and posts the analysis as a PR comment
+- [ ] **CICD-03**: Workflow declares `pull-requests: write` permission and uses `OPENAI_API_KEY` from repo secrets
+
+## Future Requirements (v1.2+)
 
 ### Enhanced API
 
-- **API-V2-01**: `GET /companies?industry=FinTech` — filter by industry
-- **API-V2-02**: `GET /companies?q=search+term` — full-text search across name and description
 - **API-V2-03**: Pagination (`?page=1&limit=20`) for large datasets
 
 ### Data Quality
@@ -63,13 +94,14 @@
 | Feature | Reason |
 |---------|--------|
 | Authentication on the REST API | Internal tool only; adds complexity without v1 value |
-| Frontend / UI | FastAPI `/docs` serves as internal interface |
 | Playwright browser automation | YC public JSON API (`api.ycombinator.com`) eliminates the need |
 | LangChain / LlamaIndex | Single-prompt-per-record pattern; raw openai client is sufficient |
-| Alembic migrations | Schema is stable for v1; `SQLModel.metadata.create_all()` is sufficient |
+| Alembic migrations | SQLModel `create_all()` + migration script is sufficient at this scale |
 | Async OpenAI calls | API is read-only; sync routes with FastAPI threadpool are correct for this scope |
 | PostgreSQL | SQLite is sufficient for batch size of 10–50 companies |
 | Real-time scraping on API request | Scraping runs as a one-time batch pipeline script |
+| FTS5 full-text search | LIKE-based search is correct at 50 records; defer FTS5 to v1.2 |
+| Multiple agents architecture | Single-prompt-per-company is sufficient; no orchestration loop needed |
 
 ## Traceability
 
@@ -94,10 +126,26 @@
 | API-02 | Phase 4 | Pending |
 | API-03 | Phase 4 | Pending |
 | API-04 | Phase 4 | Pending |
+| CACHE-01 | Phase 5 | Pending |
+| CACHE-02 | Phase 5 | Pending |
+| CACHE-03 | Phase 5 | Pending |
+| FILTER-01 | Phase 6 | Pending |
+| FILTER-02 | Phase 6 | Pending |
+| FILTER-03 | Phase 6 | Pending |
+| FILTER-04 | Phase 6 | Pending |
+| MCP-01 | Phase 7 | Pending |
+| MCP-02 | Phase 7 | Pending |
+| MCP-03 | Phase 7 | Pending |
+| UI-01 | Phase 8 | Pending |
+| UI-02 | Phase 8 | Pending |
+| UI-03 | Phase 8 | Pending |
+| CICD-01 | Phase 9 | Pending |
+| CICD-02 | Phase 9 | Pending |
+| CICD-03 | Phase 9 | Pending |
 
 **Coverage:**
-- v1 requirements: 19 total
-- Mapped to phases: 19
+- v1.0 requirements: 19 total — mapped to phases 1–4 ✓
+- v1.1 requirements: 19 total — mapped to phases 5–9 ✓
 - Unmapped: 0 ✓
 
 ---
