@@ -1,5 +1,18 @@
 # AI Company Research Agent
 
+## Current Milestone: v1.1 Agent-Accessible & Production-Ready
+
+**Goal:** Extend the research agent with agentic integrations (MCP server), a usable frontend, smart AI caching, filtering/search on the REST API, and automated CI/CD code review.
+
+**Target features:**
+- MCP server (FastMCP, standalone Python process) — `list_companies`, `get_company`, `search_companies` tools reading from the shared SQLite DB
+- Filtering/search — `?industry=` and `?q=` query params on `GET /companies`
+- AI response caching — SHA-256 hash of description stored as `description_hash`; pipeline skips OpenAI call if hash already has a cached analysis
+- Simple frontend — static HTML/JS page to browse company cards and filter by industry
+- CI/CD pipeline — GitHub Actions workflow with agentic tool (Copilot/Claude) for automated PR code review comments
+
+---
+
 ## What This Is
 
 An internal tool that automates company/startup research and analysis. It scrapes company data from Y Combinator's startup directory, runs each company through an OpenAI-powered agent to generate structured insights (industry, business model, summary, use case), stores everything in a SQLite database, and exposes the results through a FastAPI REST API.
@@ -16,6 +29,7 @@ Any company in the database can be instantly retrieved with AI-generated insight
 
 ### Active
 
+**v1.0 (in progress — Phases 1–4):**
 - [ ] Collect at least 10 companies from Y Combinator directory via web scraping
 - [ ] Each company record includes: name, website, description
 - [ ] AI agent analyzes each company and generates: industry, business model, 1-sentence summary, potential use case
@@ -24,6 +38,13 @@ Any company in the database can be instantly retrieved with AI-generated insight
 - [ ] `GET /companies/{id}` endpoint returns full details for a specific company
 - [ ] System handles edge cases: missing descriptions, ambiguous companies
 - [ ] AI prompt is documented with rationale for design choices
+
+**v1.1 (planned — Phases 5–9):**
+- [ ] MCP server exposes company data as callable tools for agentic clients
+- [ ] `GET /companies` supports `?industry=` and `?q=` filtering
+- [ ] AI analysis pipeline caches responses by description hash to avoid redundant API calls
+- [ ] Static frontend lets users browse and filter company insights in a browser
+- [ ] GitHub Actions CI/CD triggers automated agentic code review on pull requests
 
 ### Out of Scope
 
@@ -78,4 +99,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-07 after initialization*
+*Last updated: 2026-04-07 — Milestone v1.1 started*
