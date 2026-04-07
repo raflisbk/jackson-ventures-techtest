@@ -17,7 +17,7 @@
 
 - [x] **Phase 5: AI Caching** - SHA-256 description hash column + cache-aware pipeline skip logic
 - [x] **Phase 6: Filtering & Search** - `?industry=` and `?q=` query params on `GET /companies`
-- [ ] **Phase 7: MCP Server** - Standalone FastMCP stdio server exposing three company tools
+- [x] **Phase 7: MCP Server** - Standalone FastMCP stdio server exposing three company tools
 - [ ] **Phase 8: Static Frontend** - HTML/JS company card browser served at `/ui`
 - [ ] **Phase 9: CI/CD Pipeline** - GitHub Actions workflow with agentic OpenAI PR code review
 

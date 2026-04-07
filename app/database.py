@@ -13,6 +13,7 @@ scripts/ subdirectory. We build the absolute path from __file__ instead.
 """
 from pathlib import Path
 
+from sqlalchemy import text
 from sqlmodel import Session, SQLModel, create_engine
 
 # Absolute path: app/database.py lives at <project_root>/app/database.py
@@ -30,6 +31,11 @@ engine = create_engine(
     DATABASE_URL,
     connect_args={"check_same_thread": False},
 )
+
+# WAL mode: allows concurrent reads from MCP server without SQLITE_BUSY
+with engine.connect() as _conn:
+    _conn.execute(text("PRAGMA journal_mode=WAL"))
+    _conn.commit()
 
 
 def create_db_and_tables() -> None:
