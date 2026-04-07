@@ -1,8 +1,14 @@
 """
 REST routes for company data.
 
-GET /companies        — returns all companies as a JSON array (API-01)
-GET /companies/{id}   — returns one company by integer primary key (API-02)
+GET /companies           — returns all companies (optional ?industry= and ?q= filters)
+GET /companies/{id}      — returns one company by integer primary key
+
+Filtering rules:
+- ?industry=fintech   case-insensitive exact match on industry column
+- ?q=payments         case-insensitive substring match on company_name OR description
+- ?industry=          (empty string) — treated as absent; returns all companies
+- % and _ in ?q= are escaped before use in LIKE to prevent wildcard injection
 
 Route functions are plain `def` (not async) because get_db() is a sync
 generator. FastAPI runs sync routes in its default threadpool — no manual
@@ -11,8 +17,10 @@ executor wiring needed.
 Prefix "/companies" is set on the router, NOT on include_router() in main.py,
 to avoid the "/companies/companies" duplication pitfall documented in research.
 """
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
+from sqlmodel import Session, func, or_, select
 
 from app.database import get_db
 from app.models import Company
@@ -21,9 +29,35 @@ router = APIRouter(prefix="/companies", tags=["companies"])
 
 
 @router.get("/", response_model=list[Company])
-def get_companies(db: Session = Depends(get_db)):
-    """Return all companies. Returns an empty JSON array when the DB has no rows."""
-    return db.exec(select(Company)).all()
+def get_companies(
+    industry: Optional[str] = None,
+    q: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    """Return companies, optionally filtered by industry and/or full-text search.
+
+    Query parameters:
+    - industry: case-insensitive exact match (e.g. ?industry=fintech)
+    - q:        case-insensitive substring on company_name or description
+    """
+    stmt = select(Company)
+
+    # FILTER-01: industry filter — truthy check rejects empty string (FILTER-1)
+    if industry:
+        stmt = stmt.where(func.lower(Company.industry) == industry.lower())
+
+    # FILTER-02: text search — escape % and _ before use in LIKE (FILTER-2)
+    if q:
+        safe_q = q.replace("\\", "\\\\").replace("%", r"\%").replace("_", r"\_")
+        pattern = f"%{safe_q}%"
+        stmt = stmt.where(
+            or_(
+                Company.company_name.ilike(pattern),
+                Company.description.ilike(pattern),
+            )
+        )
+
+    return db.exec(stmt).all()
 
 
 @router.get("/{company_id}", response_model=Company)
