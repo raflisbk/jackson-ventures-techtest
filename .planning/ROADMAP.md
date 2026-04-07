@@ -22,7 +22,12 @@ Four phases deliver the collect→analyze→store→expose pipeline. Schema and 
   2. App startup (or pipeline run) fails immediately with a clear error message if `OPENAI_API_KEY` is missing from the environment
   3. Database file path resolves consistently regardless of which directory the process starts from (absolute path via `Path(__file__).resolve()`)
   4. Importing `app.database` in a multi-threaded context does not raise `ProgrammingError` (`check_same_thread=False` is set and `get_db()` yields per-request sessions)
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] phase-1-01-PLAN.md — Project scaffold + core modules (config.py, models.py, database.py)
+- [ ] phase-1-02-PLAN.md — Test suite validating all 4 success criteria
+
 **Technical notes**: `check_same_thread=False` + `Depends(get_db)` both required. SQLModel unifies DB table + Pydantic schema into single `Company` class. `pydantic-settings` loads `OPENAI_API_KEY` and `DATABASE_URL` with fail-fast validation.
 
 ---
