@@ -69,7 +69,12 @@ Plans:
   2. The `industry` field always contains one of the predefined enum values — never free-form or inconsistent text
   3. A single company failing OpenAI analysis is logged and skipped; the remaining batch completes without interruption
   4. OpenAI 429 rate-limit errors trigger automatic retries with exponential backoff — the pipeline does not crash on transient API errors
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — agent/analyzer.py (Industry enum + CompanyAnalysis + analyze_company) + scripts/run_pipeline.py orchestrator
+- [ ] 03-02-PLAN.md — tests/test_analyzer.py: 7 mocked unit tests covering all AI-0x requirements
+
 **Technical notes**: Use `client.beta.chat.completions.parse(response_format=CompanyAnalysis)` — NOT `json_object` mode (schema not enforced). `class Industry(str, Enum)` in Pydantic model prevents taxonomy drift. `tenacity` `@retry` with `retry_if_exception_type((RateLimitError, APIConnectionError))`. Commit per-company (not batch) to survive partial runs. `run_pipeline.py` is the only file that imports from all three domains.
 
 ---
