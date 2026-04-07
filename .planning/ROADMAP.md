@@ -48,7 +48,7 @@ Plans:
 **Requirements**: COLL-01, COLL-02, COLL-03, COLL-04
 **Success Criteria** (what must be TRUE):
   1. Running `scraper/yc_scraper.py` populates the database with ≥10 company records, each containing name, website URL, and description
-  2. Each stored record has a non-empty description — companies with missing `longDescription` use the fallback chain (`shortDescription` → `oneLiner` → name-only placeholder)
+  2. Each stored record has a non-empty description — companies with missing `longDescription` use the fallback chain (`longDescription` → `oneLiner` → name-only placeholder) [Note: YC API has no `shortDescription` field]
   3. Running the scraper twice produces no duplicate records (upsert by company name prevents re-insertion)
 **Plans**: 2 plans
 

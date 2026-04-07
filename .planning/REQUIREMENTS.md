@@ -9,7 +9,7 @@
 
 - [ ] **COLL-01**: System fetches at least 10 company records from the YC public JSON API (`api.ycombinator.com/v0.1/companies`)
 - [ ] **COLL-02**: Each collected company record contains: company name, website URL (if available), and description
-- [ ] **COLL-03**: Scraper handles companies with missing or empty descriptions via a fallback chain (shortDescription → longDescription → name-only placeholder)
+- [ ] **COLL-03**: Scraper handles companies with missing or empty descriptions via a fallback chain (longDescription → oneLiner → name-only placeholder) [Note: YC API has no shortDescription field — confirmed by live API probe]
 - [ ] **COLL-04**: Scraper is idempotent — re-running does not create duplicate records (upsert by company name)
 
 ### AI Analysis
