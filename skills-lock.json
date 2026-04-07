@@ -1,0 +1,255 @@
+{
+  "version": 1,
+  "skills": {
+    "agent-browser": {
+      "source": "vercel-labs/agent-browser",
+      "sourceType": "github",
+      "computedHash": "fc173a14ecea820739ea971bf81eddbf94e12ce99312fb83e55342724316c5dd"
+    },
+    "agentcore": {
+      "source": "vercel-labs/agent-browser",
+      "sourceType": "github",
+      "computedHash": "194f6567ad83e506be6a6f29861aec0da3829ecbfdf118c25d5045aa65090108"
+    },
+    "algorithmic-art": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "7c446629c20a537aba3496490550bbfddf71b3bb71904c9c0056c9daa025a330"
+    },
+    "answers": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "computedHash": "4c3af8d1e3bbdd1501fba71520cb88cd962e5b256c6c5f6085d0b295828960f5"
+    },
+    "brand-guidelines": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "cf41642f38f35bcae5bbf59215f0ee629d5f6a54b4811454f6cb93bc9b12b69e"
+    },
+    "bx": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "computedHash": "637b3a76e68173a07fb38bfd7c089efe01bf4f17f4d74e340bbdddf361658b5f"
+    },
+    "canvas-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "21e7c68d336893e4f2aa8d269854fd5e253c89cfc6dd0e74fa487fe7e96abdeb"
+    },
+    "claude-api": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "dcc7954d95d291fbac8d90b199c81a8b475eb7f0d339bd63334ada7251b5ff89"
+    },
+    "deploy-to-vercel": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "03e0eaaa9bf13ba1e7ffa387f5893de6f324c0868c627001f179395a8feaa7c9"
+    },
+    "doc-coauthoring": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "62cd7744438ee2aecc986c520bb603988a78ff6aaaf70a471bf4584fe0b78dae"
+    },
+    "docx": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "150be87ff7b18f273ad07da303adb1cf2ca21cc3e76db7a2cf0373405178a278"
+    },
+    "dogfood": {
+      "source": "vercel-labs/agent-browser",
+      "sourceType": "github",
+      "computedHash": "c1b1133e43d087a9f97de44c2b8abdd4b6c59364d3ac9c0456b01916d58a55b2"
+    },
+    "electron": {
+      "source": "vercel-labs/agent-browser",
+      "sourceType": "github",
+      "computedHash": "637d08276e7d16c4a4fa1a5d661cb88830ce39679053b74d0b48a7f792667f91"
+    },
+    "fastapi": {
+      "source": "fastapi/fastapi",
+      "sourceType": "github",
+      "computedHash": "9feb517089c269af4fdab5031dea1100a92fd50081e906ccfaf8a971858e39f9"
+    },
+    "fastapi-templates": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "computedHash": "1a5fe66bd2683afd1db9afdf37a25cd8b9195c369c98489333badf0406fc91b3"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "computedHash": "9e1c8b3103f92fa8092568a44fe64858de7c5c9dc65ce4bea8f168080e889cfd"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "516bd2154eb843a8240e43d5b285229129853114ad7075a5e141e1c08e408c84"
+    },
+    "images-search": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "computedHash": "9f84826cdb63ad23c52a9d8e481f2347ee767dcaf712d5f972bab0e8195f61d8"
+    },
+    "internal-comms": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "6e7e5d2f3bfa91e6ce302e629ff639bc82d95d2ce3454383531093cbeb8b38b0"
+    },
+    "llm-context": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "computedHash": "206d5336a4a85f6cab4133cb60aeec46b905481976ede607bdaf25194448899f"
+    },
+    "local-descriptions": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "computedHash": "8fa492a2a9acc44ec54f48f10cdb4d1a8573b9382eca21762b285c6bfcb64f6a"
+    },
+    "local-pois": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "computedHash": "b4373954c897c0f3c82096d0bd9b529231bbf5117f769f57fef6083b2ddb5fc7"
+    },
+    "mcp-builder": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "f08cbdec74dba480ec5217363446dae154b7576b8c3d9b4cb17aff234f15973b"
+    },
+    "news-search": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "computedHash": "caa516bc6d5ccc06a8bcf79323874ffa0967392c947d3323a12c2588ddd2f304"
+    },
+    "pdf": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "37226d4220d844377e6b2a386c51a011df4cd130855ff0b80bcc22f9c28abd57"
+    },
+    "playwright-cli": {
+      "source": "microsoft/playwright-cli",
+      "sourceType": "github",
+      "computedHash": "675811a7e7f958e6544f9c6bc53993c85fe39e72c5820a60d9d46bd169eddc32"
+    },
+    "postgresql-optimization": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "8022448de70ba9a485e3b5bce34c5bbc644f93eb39b68431c9f7dabcf03aeb09"
+    },
+    "postgresql-table-design": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "computedHash": "d7d040ee506a300c08a64b9ef6de9aa677b6d7251e33c3c87e0608f821a9506d"
+    },
+    "pptx": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "2275e4d8dba1790d52f6619b3e2fed04edc948beef545a2ad18e4a1be644426d"
+    },
+    "ruff-formatting": {
+      "source": "laurigates/claude-plugins",
+      "sourceType": "github",
+      "computedHash": "115b346231208b8c11f56faded7717b419e9b32cb2e190360e61fa0b142d854d"
+    },
+    "ruff-linting": {
+      "source": "laurigates/claude-plugins",
+      "sourceType": "github",
+      "computedHash": "d1fb6d34d48a645bc5715f91dd5ba176aad87355147e965ad49cfd4a8744d9a7"
+    },
+    "skill-creator": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "57f470f512f45bdac598e302bc72fd62bf2b649fc7fad032efe97720149cde4d"
+    },
+    "slack": {
+      "source": "vercel-labs/agent-browser",
+      "sourceType": "github",
+      "computedHash": "6304c96ecaf1494e2be424ebb9e52a882ea59b3ee452513764604f349572c7a9"
+    },
+    "slack-gif-creator": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "e6ba2e516960ee584328162d2e16aa7fc7c800d807b87866c20f19c8419644f9"
+    },
+    "spellcheck": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "computedHash": "d5b02e8747b7c13f85894c2b099f9dd9925021dc77c5e5a48823ae1b981aa1b6"
+    },
+    "suggest": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "computedHash": "8f4c720622e91a9ac7bc7d77352f0e9345863f1c2352c0d7d86cef82a4b032e9"
+    },
+    "template-skill": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "daf176f2cd0030d321982d3e813fd1a794a0b4744c5a92d2931a37001bb40fb9"
+    },
+    "theme-factory": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "0290eabfd6fea9fcfd59c12de15e3f4046593185089956802b6d48ba1d07f428"
+    },
+    "vercel-cli-with-tokens": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "1e1664e75dcab248050faac99db1aaef1456b7945266215ccbab68ddf85b2b79"
+    },
+    "vercel-composition-patterns": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "575757e3e25761c8c562d6e395d29f0b76c98b1273c0bd72d88e6ab1bc9c7d42"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "43ca6c197f8ec13055079da7053232d477068b03ca443f9ac1bc819b95cdd432"
+    },
+    "vercel-react-native-skills": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "41d24eafa7c3d82e270439808f7cfbc4d51aeb2d14f2809a2267c16275784d06"
+    },
+    "vercel-react-view-transitions": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "c8952fc9127fa0564d0cb71dccb4215a5608ac933b5831104f09173a97a46f85"
+    },
+    "vercel-sandbox": {
+      "source": "vercel-labs/agent-browser",
+      "sourceType": "github",
+      "computedHash": "d4420f40974fe2964a8198d40998227d3f28c19b7f623b0b0f7422b569ea9ce9"
+    },
+    "videos-search": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "computedHash": "04c29bd7e60fe131ce02fc3e14024b78b73cb0b98fa269d1926a76a7db82496b"
+    },
+    "web-artifacts-builder": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "8506451d6d3a3494ddca091b0f0ff7a9961ddd4301df2b6264dd3f98bed75b0a"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "f3bc47f890f42a44db1007ab390709ec368e4b8c089baee6b0007182236ac474"
+    },
+    "web-search": {
+      "source": "brave/brave-search-skills",
+      "sourceType": "github",
+      "computedHash": "d32a0e1aad4f1df0c8e9e869dad47450295ee07ff5a9dd2dd892422a9937eef3"
+    },
+    "webapp-testing": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "5a6a18c0137cfbabec058e86fc1c8f6919d846a7b2a34ee978cc8ced866ee2e5"
+    },
+    "xlsx": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "cb7fba2177d0d35d14b3244272b25d1b05246e99b3468a087fe06c84193dbd20"
+    }
+  }
+}
