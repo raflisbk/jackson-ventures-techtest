@@ -96,8 +96,8 @@
 | API-04 | Phase 4 | Pending |
 
 **Coverage:**
-- v1 requirements: 18 total
-- Mapped to phases: 18
+- v1 requirements: 19 total
+- Mapped to phases: 19
 - Unmapped: 0 ✓
 
 ---
