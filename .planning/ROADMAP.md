@@ -8,7 +8,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: Foundation** - Schema, config, SQLite engine with threading fix
+- [x] **Phase 1: Foundation** - Schema, config, SQLite engine with threading fix
 - [ ] **Phase 2: Data Collection** - YC JSON API scraper with idempotent upserts
 - [ ] **Phase 3: AI Analysis Pipeline** - OpenAI Structured Outputs + run_pipeline.py orchestrator
 - [ ] **Phase 4: REST API** - FastAPI endpoints exposing stored company insights
@@ -35,8 +35,8 @@
 **Plans**: 2 plans
 
 Plans:
-- [ ] phase-1-01-PLAN.md — Project scaffold + core modules (config.py, models.py, database.py)
-- [ ] phase-1-02-PLAN.md — Test suite validating all 4 success criteria
+- [x] phase-1-01-PLAN.md — Project scaffold + core modules (config.py, models.py, database.py)
+- [x] phase-1-02-PLAN.md — Test suite validating all 4 success criteria
 
 **Technical notes**: `check_same_thread=False` + `Depends(get_db)` both required. SQLModel unifies DB table + Pydantic schema into single `Company` class. `pydantic-settings` loads `OPENAI_API_KEY` and `DATABASE_URL` with fail-fast validation.
 
