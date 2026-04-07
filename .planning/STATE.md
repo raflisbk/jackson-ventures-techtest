@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-04-07)
 
 **Core value:** Any company in the database can be instantly retrieved with AI-generated insights — no manual research needed.
-**Current focus:** Phase 1 — Foundation
+**Current focus:** Phase 5 — AI Caching
 
 ## Current Position
 
-Phase: Not started (defining v1.1 requirements)
+Phase: Phase 5 — AI Caching
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-07 — Milestone v1.1 started
+Status: Ready to plan
+Last activity: 2026-04-07 — Milestone v1.1 roadmap created
 
 Progress: [░░░░░░░░░░] 0%
 
