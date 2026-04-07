@@ -50,7 +50,12 @@ Plans:
   1. Running `scraper/yc_scraper.py` populates the database with ≥10 company records, each containing name, website URL, and description
   2. Each stored record has a non-empty description — companies with missing `longDescription` use the fallback chain (`shortDescription` → `oneLiner` → name-only placeholder)
   3. Running the scraper twice produces no duplicate records (upsert by company name prevents re-insertion)
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — scraper/yc_scraper.py: YC API fetch, description fallback chain, sqlite3 upsert + live verification
+- [ ] 02-02-PLAN.md — tests/test_scraper.py: offline unit + integration tests using unittest.mock
+
 **Technical notes**: Fetch from `api.ycombinator.com/v0.1/companies` (public JSON, no auth). Follow `nextPage` cursor. Use `requests` — no Playwright needed. Add 0.5s polite delay between pages. Do NOT scrape `ycombinator.com/companies` HTML (JS shell, zero data).
 
 ---
