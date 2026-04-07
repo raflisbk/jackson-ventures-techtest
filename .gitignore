@@ -22,3 +22,10 @@ data/*.db
 # OS
 .DS_Store
 Thumbs.db
+
+# Copilot CLI / local tooling (not project code)
+.agents/
+.claude/
+skills-lock.json
+test_idx.db
+*.pdf
