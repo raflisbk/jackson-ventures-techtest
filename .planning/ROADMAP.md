@@ -9,7 +9,7 @@
 ## Phases
 
 - [x] **Phase 1: Foundation** - Schema, config, SQLite engine with threading fix
-- [ ] **Phase 2: Data Collection** - YC JSON API scraper with idempotent upserts
+- [x] **Phase 2: Data Collection** - YC JSON API scraper with idempotent upserts
 - [ ] **Phase 3: AI Analysis Pipeline** - OpenAI Structured Outputs + run_pipeline.py orchestrator
 - [ ] **Phase 4: REST API** - FastAPI endpoints exposing stored company insights
 
