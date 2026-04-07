@@ -15,7 +15,7 @@
 
 ### v1.1 Phases
 
-- [ ] **Phase 5: AI Caching** - SHA-256 description hash column + cache-aware pipeline skip logic
+- [x] **Phase 5: AI Caching** - SHA-256 description hash column + cache-aware pipeline skip logic
 - [ ] **Phase 6: Filtering & Search** - `?industry=` and `?q=` query params on `GET /companies`
 - [ ] **Phase 7: MCP Server** - Standalone FastMCP stdio server exposing three company tools
 - [ ] **Phase 8: Static Frontend** - HTML/JS company card browser served at `/ui`

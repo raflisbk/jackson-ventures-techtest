@@ -22,7 +22,7 @@ from sqlmodel import Session, select
 from app.database import create_db_and_tables, engine
 from app.models import Company
 from scraper.yc_scraper import fetch_companies
-from agent.analyzer import analyze_company
+from agent.analyzer import analyze_company, compute_description_hash
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -50,8 +50,17 @@ def run() -> None:
         failed = 0
 
         for i, company in enumerate(companies, 1):
-            # Skip logic (AI-04 idempotency): industry IS NOT NULL means done
-            if company.industry is not None:
+            # Two-condition cache check (CACHE-01):
+            # Hash match alone is insufficient — partial write (hash stored but
+            # analysis failed) must trigger re-analysis.
+            computed_hash = compute_description_hash(company.description or "")
+            is_cache_hit = (
+                computed_hash is not None
+                and company.description_hash == computed_hash
+                and company.industry is not None
+            )
+            if is_cache_hit:
+                logger.info(f"[CACHE HIT] {company.company_name}")
                 skipped += 1
                 continue
 
@@ -70,6 +79,7 @@ def run() -> None:
                 company.business_model = result.business_model
                 company.summary = result.summary
                 company.use_case = result.use_case
+                company.description_hash = computed_hash   # CACHE-02: store hash
                 session.add(company)
                 session.commit()   # per-company commit — partial runs survive crashes
                 analyzed += 1

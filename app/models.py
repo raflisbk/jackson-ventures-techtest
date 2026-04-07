@@ -26,3 +26,6 @@ class Company(SQLModel, table=True):
     business_model: Optional[str] = None
     summary: Optional[str] = None
     use_case: Optional[str] = None
+
+    # Caching field (populated in Phase 5)
+    description_hash: Optional[str] = None

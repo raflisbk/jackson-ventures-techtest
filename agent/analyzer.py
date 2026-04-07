@@ -7,6 +7,7 @@ It receives raw primitives (str) and returns a Pydantic model or None.
 Public interface:
     analyze_company(company_name, description, api_key=None) -> Optional[CompanyAnalysis]
 """
+import hashlib
 import logging
 import os
 from enum import Enum
@@ -23,6 +24,24 @@ from tenacity import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Hash helper (CACHE-01, CACHE-02)
+# ---------------------------------------------------------------------------
+
+
+def compute_description_hash(description: Optional[str]) -> Optional[str]:
+    """SHA-256 hex digest of stripped description.
+
+    Returns None for empty or whitespace-only input so the pipeline can
+    distinguish 'never hashed' from 'hashed an empty string'.
+    Stripping before hashing prevents hash drift from trailing whitespace.
+    """
+    if not description or not description.strip():
+        return None
+    return hashlib.sha256(description.strip().encode()).hexdigest()
+
 
 # ---------------------------------------------------------------------------
 # System prompt
