@@ -29,6 +29,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.database import create_db_and_tables
@@ -57,6 +58,12 @@ app = FastAPI(
 # Routes first — StaticFiles mount must come AFTER all include_router() calls
 # (STATIC-1: mounting at / would shadow all API routes and return 404)
 app.include_router(companies_router)
+
+
+@app.get("/", include_in_schema=False)
+def root_redirect():
+    """Redirect bare root URL to the frontend UI."""
+    return RedirectResponse(url="/ui/")
 
 # Mount frontend at /ui — html=True enables directory index serving index.html
 if _FRONTEND_DIR.exists():
