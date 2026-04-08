@@ -32,12 +32,13 @@ cp .env.example .env
 python scraper/yc_scraper.py
 
 # 2. Run AI analysis pipeline (requires OPENAI_API_KEY)
-python scripts/run_pipeline.py
+python -m scripts.run_pipeline
 
 # 3. Start REST API + frontend
 uvicorn app.main:app --reload
-# API:      http://localhost:8000/docs
+# Root:     http://localhost:8000        ← redirects to /ui automatically
 # Frontend: http://localhost:8000/ui
+# API docs: http://localhost:8000/docs
 
 # 4. Start MCP server (stdio transport — for Claude Desktop / Cursor)
 python mcp_server/server.py

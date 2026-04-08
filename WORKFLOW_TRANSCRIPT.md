@@ -441,6 +441,332 @@ git rm -r --cached .agents/ .claude/ skills-lock.json test_idx.db
 
 ---
 
+## Session 4 — Phase Execution: Phases 2–9 (Full Implementation)
+
+**Trigger**: User invoked `/gsd-execute-phase` for phases 1, 3, then resumed for all remaining  
+**Commits**: `793c48e` → `8acc12b` → `240d77c` → `f3cb124` → `97e538f` → `1c6dc81` → `030c70b` → `2a343d5` → `514cd91` → `4a8b519` → `0943be8` → `99362a1` → `cdd3c53`
+
+---
+
+### Step 25 — Phase 2: Data Collection
+
+**Agent**: `gsd-executor` spawned for Phase 2
+
+**Plans executed:**
+1. `phase-2-01-PLAN.md` — Research YC API + write `scraper/yc_scraper.py`
+2. `phase-2-02-PLAN.md` — Write offline test suite (`tests/test_scraper.py`)
+
+**Files created:**
+```
+scraper/yc_scraper.py     ← sqlite3, requests.Session, _ensure_table(), fetch_companies(db_path=)
+tests/test_scraper.py     ← 7 tests: fallback priority, upsert logic, AI field preservation
+```
+
+**Key decisions made during execution:**
+- Used `requests.Session` (not bare `requests.get`) for connection reuse across paginated calls
+- `fetch_companies(db_path=None)` accepts optional path override for test isolation
+- Upsert uses `SELECT id` first then `UPDATE`/`INSERT` — not `INSERT OR REPLACE` (would overwrite AI fields)
+- `MAX_PAGES = 2` (50 companies) — sufficient for demo without long scrape waits
+
+**Result**: ✅ 50 companies scraped into DB. 11 tests passing.
+
+**Commits:**
+- `793c48e` — `feat(phase-2): implement YC API scraper`
+- `8acc12b` — `feat(phase-2): test suite + mark phase complete (11/11 tests, 50 companies in DB)`
+
+---
+
+### Step 26 — Phase 3: AI Analysis Pipeline
+
+**Agents**: `gsd-phase-researcher` + `gsd-planner` + `gsd-executor` for Phase 3
+
+**Files created:**
+```
+agent/analyzer.py         ← Industry(str, Enum), CompanyAnalysis(BaseModel), analyze_company()
+                             compute_description_hash(), _call_openai() with @retry(tenacity)
+scripts/run_pipeline.py   ← orchestrates scrape → analyze loop with two-condition cache check
+tests/test_analyzer.py    ← 7 tests: structured output, enum values, None on failure/refusal/no-key
+```
+
+**Key design decisions:**
+- `Industry(str, Enum)` with 13 controlled verticals — prevents free-text taxonomy drift
+- `client.beta.chat.completions.parse(response_format=CompanyAnalysis)` — Structured Outputs, not `json_object` mode
+- `@retry` wraps only `_call_openai()` (not the loop) — one 429 retries only that company, not entire batch
+- `analyze_company()` catches ALL exceptions and returns `None` — pipeline never aborts on one failure
+
+**Commits:**
+- `240d77c` — `research: Phase 3 AI analysis pipeline`
+- `f3cb124` — `plan: Phase 3 AI analysis pipeline`
+- `97e538f` — `feat: Phase 3 AI analysis pipeline complete`
+
+---
+
+### Step 27 — Phase 4: REST API
+
+**Files created:**
+```
+app/routers/companies.py  ← GET /companies/ (list), GET /companies/{id} (detail), Depends(get_db)
+tests/test_api.py         ← 6 tests: empty list, list with data, get by id, 404, 422, AI fields
+```
+
+**Key decisions:**
+- `Company` SQLModel class used directly as `response_model=` — no separate schema needed
+- `def` routes (not `async def`) — DB calls are sync; FastAPI runs in thread pool with `check_same_thread=False`
+- `Depends(get_db)` on every route — new Session per call, never shared global
+
+**Commits:**
+- `1c6dc81` — `research: Phase 4 REST API`
+- `030c70b` — `plan: Phase 4 REST API`
+- `2a343d5` — `feat: Phase 4 REST API complete`
+
+---
+
+### Step 28 — Phase 5: AI Caching
+
+**Files created:**
+```
+scripts/migrate_add_hash.py   ← ALTER TABLE company ADD COLUMN description_hash TEXT (idempotent)
+tests/test_caching.py         ← 7 tests: hash determinism, two-condition cache logic
+tests/test_migration.py       ← 2 tests: column added, idempotent run
+```
+
+**Key implementation:**
+```python
+computed_hash = hashlib.sha256(description.strip().encode()).hexdigest()
+is_cache_hit = (company.description_hash == computed_hash) and (company.industry is not None)
+```
+Both conditions required — hash alone insufficient (partial write: hash stored, analysis failed).
+
+**Commit:** `514cd91` — `feat: Phase 5 AI Caching complete`
+
+---
+
+### Step 29 — Phase 6: Filtering & Search
+
+**Files modified/created:**
+```
+app/routers/companies.py   ← added ?industry= and ?q= query params to GET /companies/
+tests/test_filtering.py    ← 11 tests: exact/case-insensitive filter, keyword search, wildcard safety
+```
+
+**Critical bugs prevented:**
+- `if industry:` (not `if industry is not None:`) — FastAPI passes `?industry=` as `""` not `None`
+- Wildcard escaping: `q.replace("%", r"\%").replace("_", r"\_")` + `add ESCAPE '\\'`
+
+**Commit:** `4a8b519` — `feat: Phase 6 Filtering & Search complete`
+
+---
+
+### Step 30 — Phase 7: MCP Server
+
+**Files created:**
+```
+mcp_server/__init__.py
+mcp_server/server.py      ← FastMCP, 3 tools: list_industries, search_companies, get_company
+                             Separate _engine (not app.database), WAL mode, stderr-only logging
+```
+
+**Critical pitfalls avoided:**
+- `import sys, logging; logging.basicConfig(stream=sys.stderr)` — FIRST two lines, before all else
+- WAL mode on `_engine` — `PRAGMA journal_mode=WAL` prevents SQLITE_BUSY with concurrent FastAPI
+- Local imports inside tool bodies — `from app.models import Company` avoids `Settings()` at module load
+
+**Commit:** `0943be8` — `feat: Phase 7 MCP Server complete`
+
+---
+
+### Step 31 — Phase 8: Static Frontend
+
+**Files created:**
+```
+frontend/index.html   ← Vanilla JS SPA: company cards, debounced search, industry dropdown filter
+                        escapeHtml() XSS prevention, fetch('/companies/') with ?industry=&q= params
+```
+
+**StaticFiles mount order** (STATIC-1 pitfall):
+```python
+app.include_router(companies_router)     # routes FIRST
+app.mount("/ui", StaticFiles(...))       # mount LAST — at /ui not /
+```
+
+**Commit:** `99362a1` — `feat: Phase 8 Static Frontend complete`
+
+---
+
+### Step 32 — Phase 9: CI/CD Pipeline
+
+**Files created:**
+```
+.github/workflows/ci.yml    ← lint (ruff) → test (pytest) → AI code review on PRs
+scripts/ai_code_review.py   ← fetches PR diff, calls OpenAI gpt-4o-mini, posts review comment
+```
+
+**Key guards implemented:**
+- `if: github.event.pull_request.draft == false` — skip draft PRs
+- `if: github.event.pull_request.head.repo.full_name == github.repository` — skip fork PRs (no secrets)
+- `permissions: pull-requests: write` — required for posting comments
+
+**Commit:** `cdd3c53` — `feat: Phase 9 CI/CD Pipeline complete — project 100% done`
+
+---
+
+## Session 5 — Automated UAT: All 9 Phases
+
+**Trigger**: User invoked `/gsd-verify-work`, then asked for automated verification of all phases  
+**Commits**: `59329d0` → `d4b98cd` → `0172172`
+
+---
+
+### Step 33 — Phase 1 UAT (automated)
+
+5 checks run automatically:
+1. Cold start DB creation — `create_db_and_tables()` creates table
+2. `test_startup_fails_without_openai_key` — ValidationError raised
+3. `test_db_path_is_absolute` — path never relative to CWD
+4. `test_multithreaded_db_access_no_crash` — SQLite threading fix works
+5. Full pytest suite — 4/4 passing
+
+**Result**: ✅ 5/5 passed  
+**Commit**: `59329d0` — `test(phase-1): complete UAT - 5 passed, 0 issues`
+
+---
+
+### Step 34 — Phase 2 UAT (automated)
+
+5 checks:
+1. `pytest tests/test_scraper.py` — 7/7 passing
+2. DB record count — 50 companies in `data/companies.db`
+3. Import boundary scan (AST) — scraper imports nothing from `app/` or `agent/`
+4. Upsert idempotency — running scraper twice yields same count
+5. Description fallback priority — `longDescription > oneLiner > placeholder`
+
+**Result**: ✅ 5/5 passed  
+**Commit**: `d4b98cd` — `test(phase-2): complete UAT - 5 passed, 0 issues`
+
+---
+
+### Step 35 — Phases 3–9 UAT (all automated in one pass)
+
+| Phase | Tests | Key checks |
+|-------|-------|------------|
+| Phase 3 AI Analysis | 6/6 | `pytest test_analyzer.py`, Industry enum values, None on failure, no `app/` imports |
+| Phase 4 REST API | 6/6 | `pytest test_api.py`, 200/404/422 responses, AI fields present as null |
+| Phase 5 Caching | 6/6 | `pytest test_caching.py test_migration.py`, two-condition check, hash determinism |
+| Phase 6 Filtering | 6/6 | `pytest test_filtering.py`, case-insensitive, wildcard safety, combined filter |
+| Phase 7 MCP | 5/5 | 3 tools load correctly, WAL mode active on `_engine` |
+| Phase 8 Frontend | 5/5 | `index.html` exists, StaticFiles mounted at `/ui`, `escapeHtml`, debounce present |
+| Phase 9 CI/CD | 5/5 | `ci.yml` exists, draft/fork guards, PR write permission, diff fetch, comment post |
+
+**Total**: ✅ 44/44 checks passed across all 9 phases  
+**Commit**: `0172172` — `test(phases 3-9): complete automated UAT - all 44 checks passed, 0 issues`
+
+---
+
+## Session 6 — E2E Tests, README, Live Demo, Root Redirect Fix
+
+**Trigger**: User asked for E2E tests (`bisakah anda membuat test e2e`)  
+**Commits**: `a6752af` → `47d0c05` → `e1617b5`
+
+---
+
+### Step 36 — E2E Test Design
+
+**Architecture decisions:**
+- **File-based SQLite** (`tmp_path / "companies.db"`) — not StaticPool in-memory; scraper uses `sqlite3` stdlib and cannot share an in-memory engine
+- `SQLModel.metadata.create_all(eng)` runs FIRST — creates `description_hash` column before scraper's `CREATE TABLE IF NOT EXISTS` is a no-op
+- **FastAPI isolation**: `app.dependency_overrides[get_db]` with test session; cleared in fixture teardown
+- **MCP isolation**: patch `mcp_server.server._engine` at module level before each tool call
+- **Scraper mock**: patch `scraper.yc_scraper.requests.Session` (not `requests.get`) — scraper uses `Session.get()`
+- **OpenAI mock**: returns real `CompanyAnalysis` Pydantic object (not just MagicMock) so `.industry.value` works
+
+---
+
+### Step 37 — E2E Test File Written
+
+**File created**: `tests/test_e2e.py` — 577 lines, 14 test functions
+
+| Test | Scenario |
+|------|----------|
+| `test_scraper_to_db_to_api` | Mock YC HTTP → scraper → REST API (3 companies, null AI fields) |
+| `test_analyze_step_populates_ai_fields` | Insert raw → analyze → AI fields in API response |
+| `test_full_pipeline_end_to_end` | Mock scrape + mock OpenAI → full enriched response |
+| `test_caching_skips_reanalysis` | 2 calls on first run, 0 calls on second run |
+| `test_filter_by_industry` | `?industry=FinTech` returns correct 2/3 subset |
+| `test_search_by_keyword` | `?q=payment` matches name and description |
+| `test_filter_and_search_combined` | Intersection of both filters |
+| `test_frontend_served_at_ui` | `/ui/` returns 200 with `text/html` |
+| `test_mcp_list_industries` | `list_industries()` returns sorted distinct list |
+| `test_mcp_search_companies` | `search_companies(industry="FinTech")` returns correct subset |
+| `test_mcp_get_company` | `get_company(id)` returns dict; `get_company(99999)` returns None |
+| `test_pipeline_resilience_one_failure` | 1 failure → 2 analyzed, 1 null — batch not aborted |
+| `test_all_fields_in_api_response` | All 9 fields (id, company_name, description, website, industry, business_model, summary, use_case, description_hash key excluded from response) present in JSON |
+| `test_data_integrity_scraper_to_api` | Exact field values from scraper match API response byte-for-byte |
+
+**Result**: ✅ 14/14 E2E tests passed (10.23s)  
+**Full suite**: ✅ 58/58 tests passed (44 unit + 14 E2E)
+
+**Commit**: `a6752af` — `test: add 14 E2E tests covering full collect→analyze→store→expose pipeline`
+
+---
+
+### Step 38 — README Overhauled
+
+Complete rewrite of `README.md`:
+- Added architecture diagram (3-entrypoint design)
+- Documented all API endpoints + MCP tools in tables
+- Full feature summary (9 features listed)
+- E2E test coverage table (14 rows)
+- Updated stack section (added `fastmcp`)
+
+**Commit**: `47d0c05` — `docs: update README with full feature list, E2E test table, architecture`
+
+---
+
+### Step 39 — AI Analysis Pipeline Run (Live Data)
+
+```bash
+python -m scripts.run_pipeline
+```
+
+**Result**: 52/52 companies analyzed, 0 failed, 0 skipped (all were uncached)
+
+Industries breakdown after live run:
+| Industry | Count |
+|----------|-------|
+| AI/ML | 12 |
+| Enterprise SaaS | 9 |
+| DevTools | 6 |
+| HealthTech | 6 |
+| Other | 5 |
+| E-Commerce | 3 |
+| FinTech | 3 |
+| Marketplace | 2 |
+| Media/Entertainment | 2 |
+| Robotics/Hardware | 2 |
+| Defense/Security | 1 |
+| EdTech | 1 |
+
+---
+
+### Step 40 — Root Redirect Fix
+
+**Bug**: `GET /` returned `404 Not Found` — no route was registered at root.
+
+**Fix**: Added redirect route in `app/main.py`:
+```python
+from fastapi.responses import RedirectResponse
+
+@app.get("/", include_in_schema=False)
+def root_redirect():
+    return RedirectResponse(url="/ui/")
+```
+
+`http://localhost:8000` now redirects `307 → /ui/` automatically.
+
+**Commit**: `e1617b5` — `fix: add root redirect / -> /ui/ so localhost:8000 doesn't 404`
+
+---
+
 ## Summary
 
 ### All Agents Spawned
@@ -460,6 +786,14 @@ git rm -r --cached .agents/ .claude/ skills-lock.json test_idx.db
 | `pitfalls-research-v1-1` | `gsd-project-researcher` | `.planning/research/PITFALLS.md` | 2 |
 | `synthesizer-v1-1` | `gsd-research-synthesizer` | `.planning/research/SUMMARY.md` | 2 |
 | `roadmapper-v1-1` | `gsd-roadmapper` | `.planning/ROADMAP.md` (phases 5–9 appended) | 2 |
+| `gsd-executor (phase-2)` | `gsd-executor` | `scraper/yc_scraper.py`, `tests/test_scraper.py` | 4 |
+| `gsd-executor (phase-3)` | `gsd-executor` | `agent/analyzer.py`, `scripts/run_pipeline.py`, `tests/test_analyzer.py` | 4 |
+| `gsd-executor (phase-4)` | `gsd-executor` | `app/routers/companies.py`, `tests/test_api.py` | 4 |
+| `gsd-executor (phase-5)` | `gsd-executor` | `scripts/migrate_add_hash.py`, `tests/test_caching.py`, `tests/test_migration.py` | 4 |
+| `gsd-executor (phase-6)` | `gsd-executor` | `app/routers/companies.py` (updated), `tests/test_filtering.py` | 4 |
+| `gsd-executor (phase-7)` | `gsd-executor` | `mcp_server/server.py` | 4 |
+| `gsd-executor (phase-8)` | `gsd-executor` | `frontend/index.html` | 4 |
+| `gsd-executor (phase-9)` | `gsd-executor` | `.github/workflows/ci.yml`, `scripts/ai_code_review.py` | 4 |
 
 ### All Commits
 
@@ -479,10 +813,38 @@ git rm -r --cached .agents/ .claude/ skills-lock.json test_idx.db
 | `d02bf9c` | docs: create milestone v1.1 roadmap (5 phases, 19 requirements) | 2 |
 | `6ba2e67` | docs: update copilot-instructions for v1.1 | 3 |
 | `4c4571d` | chore: gitignore .agents/, .claude/, skills-lock.json, test_idx.db | 3 |
+| `5838ebc` | docs: add agentic workflow transcript (all 3 sessions, 13 agents, 14 commits) | 3 |
+| `340de59` | docs(phase-1): mark phase complete | 4 |
+| `21d47c1` | docs(02-data-collection): create phase 2 plans | 4 |
+| `0eaebcd` | docs(02-data-collection): create phase 2 plans — yc_scraper + offline tests | 4 |
+| `888986b` | docs(phase-2): plan Data Collection | 4 |
+| `793c48e` | feat(phase-2): implement YC API scraper | 4 |
+| `8acc12b` | feat(phase-2): test suite + mark phase complete (11/11 tests, 50 companies in DB) | 4 |
+| `240d77c` | research: Phase 3 AI analysis pipeline | 4 |
+| `f3cb124` | plan: Phase 3 AI analysis pipeline | 4 |
+| `97e538f` | feat: Phase 3 AI analysis pipeline complete | 4 |
+| `1c6dc81` | research: Phase 4 REST API | 4 |
+| `030c70b` | plan: Phase 4 REST API | 4 |
+| `2a343d5` | feat: Phase 4 REST API complete | 4 |
+| `514cd91` | feat: Phase 5 AI Caching complete | 4 |
+| `4a8b519` | feat: Phase 6 Filtering & Search complete | 4 |
+| `0943be8` | feat: Phase 7 MCP Server complete | 4 |
+| `99362a1` | feat: Phase 8 Static Frontend complete | 4 |
+| `cdd3c53` | feat: Phase 9 CI/CD Pipeline complete — project 100% done | 4 |
+| `59329d0` | test(phase-1): complete UAT - 5 passed, 0 issues | 5 |
+| `d4b98cd` | test(phase-2): complete UAT - 5 passed, 0 issues | 5 |
+| `0172172` | test(phases 3-9): complete automated UAT - all 44 checks passed, 0 issues | 5 |
+| `a6752af` | test: add 14 E2E tests covering full collect→analyze→store→expose pipeline | 6 |
+| `47d0c05` | docs: update README with full feature list, E2E test table, architecture | 6 |
+| `e1617b5` | fix: add root redirect / -> /ui/ so localhost:8000 doesn't 404 | 6 |
 
-### Current State
+### Final State
 
-- **Milestone**: v1.1 — Agent-Accessible & Production-Ready  
-- **Planning**: ✅ Complete (all 9 phases defined, 38 requirements mapped)  
-- **Implementation**: Phase 1 ✅ complete — Phases 2–9 not yet started  
-- **Next step**: `/gsd-plan-phase 2` to plan the YC scraper  
+- **Milestone**: v1.1 — Agent-Accessible & Production-Ready ✅ **COMPLETE**
+- **Phases**: 9/9 complete (100%)
+- **Requirements**: 38/38 mapped and implemented (19 v1.0 + 19 v1.1)
+- **Tests**: 58/58 passing (44 unit + 14 E2E)
+- **UAT**: 49/49 checks passed across all 9 phases
+- **Live data**: 52 YC S25 companies scraped and AI-analyzed
+- **Agents spawned**: 21 total across 6 sessions
+- **Commits**: 38 total
