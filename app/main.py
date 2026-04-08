@@ -15,16 +15,26 @@ Router prefix strategy:
   - Prefix "/companies" is declared inside app/routers/companies.py
   - include_router() here uses NO prefix argument to avoid duplication
 
+Static frontend (UI-01):
+  - Mounted at /ui AFTER all routers — mounting at / would shadow API routes
+  - Served from frontend/ directory as static HTML/JS (no build step)
+  - Visit /ui in a browser to browse company cards
+
 Run with:
   .venv\\Scripts\\uvicorn app.main:app --reload
-  Then visit http://127.0.0.1:8000/docs for auto-generated Swagger UI.
+  API docs: http://127.0.0.1:8000/docs
+  Frontend: http://127.0.0.1:8000/ui
 """
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from app.database import create_db_and_tables
 from app.routers.companies import router as companies_router
+
+_FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 
 
 @asynccontextmanager
@@ -44,4 +54,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Routes first — StaticFiles mount must come AFTER all include_router() calls
+# (STATIC-1: mounting at / would shadow all API routes and return 404)
 app.include_router(companies_router)
+
+# Mount frontend at /ui — html=True enables directory index serving index.html
+if _FRONTEND_DIR.exists():
+    app.mount("/ui", StaticFiles(directory=str(_FRONTEND_DIR), html=True), name="frontend")

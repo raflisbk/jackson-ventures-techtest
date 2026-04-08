@@ -24,6 +24,7 @@ data/*.db
 Thumbs.db
 
 # Copilot CLI / local tooling (not project code)
+.agents/
 skills-lock.json
 test_idx.db
 *.pdf

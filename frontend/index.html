@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YC Company Research</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .industry-badge { @apply text-xs font-semibold px-2 py-0.5 rounded-full; }
+    .card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+    .card:hover { transform: translateY(-2px); }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
+      <div class="flex-1">
+        <h1 class="text-xl font-bold text-gray-900">🚀 YC Company Research</h1>
+        <p class="text-sm text-gray-500">AI-analyzed Y Combinator startups</p>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        <!-- Search -->
+        <input
+          id="search-input"
+          type="text"
+          placeholder="Search name or description…"
+          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 w-full sm:w-56"
+        />
+        <!-- Industry dropdown -->
+        <select
+          id="industry-select"
+          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white"
+        >
+          <option value="">All Industries</option>
+        </select>
+        <!-- Clear -->
+        <button
+          id="clear-btn"
+          class="hidden px-3 py-2 text-sm rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-300"
+        >✕ Clear</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Stats bar -->
+  <div class="max-w-7xl mx-auto px-4 pt-4">
+    <p id="stats" class="text-sm text-gray-500"></p>
+  </div>
+
+  <!-- Grid -->
+  <main class="max-w-7xl mx-auto px-4 py-4">
+    <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+    <div id="empty-state" class="hidden text-center py-20 text-gray-400">
+      <p class="text-4xl mb-2">🔍</p>
+      <p class="text-lg font-medium">No companies found</p>
+      <p class="text-sm">Try adjusting your search or filter</p>
+    </div>
+    <div id="loading" class="text-center py-20 text-gray-400">
+      <p class="text-4xl mb-2 animate-pulse">⏳</p>
+      <p class="text-sm">Loading companies…</p>
+    </div>
+    <div id="error-state" class="hidden text-center py-20 text-red-400">
+      <p class="text-4xl mb-2">⚠️</p>
+      <p id="error-msg" class="text-sm">Failed to load companies.</p>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
